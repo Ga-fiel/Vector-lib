@@ -1,0 +1,23 @@
+# 向量记忆库配置
+model:
+  name: "BAAI/bge-m3"
+  # 本地路径优先；留空则从 HuggingFace 下载
+  local_path: "./models/bge-m3"
+  max_length: 512
+  device: "cpu"            # 有 GPU 改成 "cuda"
+
+store:
+  path: "./qdrant_data"    # Qdrant 本地模式数据目录
+  dense_dim: 1024          # BGE-M3 稠密向量维度（勿改）
+  # 库映射表在 qdrant_data/libraries.json，一个库对应 collections/<库id>/ 目录
+
+chunk:
+  size: 400                # 每片字数
+  overlap: 80              # 相邻片重叠字数
+
+retrieve:
+  top_k: 5                 # 混合检索命中段数（阶段1）
+  mode: "neighbor"         # 默认模式2：命中段上下各取 expand 段拼连续上下文
+                           # 模式1用 "full"：命中段所在文档的全部段
+  expand: 1                # neighbor 模式上下各取几段（可改 2/3/4）
+  max_chunks: 20           # 打包返回最多几段（防规模过大）
