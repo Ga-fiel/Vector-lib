@@ -39,19 +39,33 @@ vector-memory/
 └── tests/test_memory.py  自测脚本（用临时目录，不污染数据）
 ```
 
-## 安装
+## 安装（别人拿到仓库后照做）
 
-```bash
+需要 Python 3.10+（推荐 3.12）。
+
+### 1. 装依赖
+
+在项目目录打开 PowerShell：
+
+```powershell
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-模型下载（国内用镜像）：
+### 2. 下载模型（最关键，仓库里没有）
 
-```bash
-set HF_ENDPOINT=https://hf-mirror.com
-.venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download('BAAI/bge-m3', local_dir='./models/bge-m3', allow_patterns=['*.json','*.model','*.bin','*.txt','*.pt'])"
+BGE-M3 模型约 2GB，**不在仓库里**（被 `.gitignore` 排除），必须自己下载，否则运行会报“找不到模型”。这是最容易卡住的一步，建议用 hf-mirror 镜像：
+
+```powershell
+$env:HF_ENDPOINT="https://hf-mirror.com"
+.\.venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download('BAAI/bge-m3', local_dir='./models/bge-m3', allow_patterns=['*.json','*.model','*.bin','*.txt','*.pt'])"
 ```
+
+> `*.bin` 包含约 2GB 的 `pytorch_model.bin`，`*.pt` 包含 `colbert_linear.pt` / `sparse_linear.pt`，缺一个都会加载失败。上面命令已把这些全部包含，一次下全。
+
+### 3.（可选）改配置
+
+有 GPU 就把 `config.yaml` 里的 `device: cpu` 改成 `cuda`，其余保持默认即可。
 
 ## 自测
 
@@ -77,9 +91,9 @@ MCP Server 入口：`src/server.py`，stdio 传输。agent 侧配置示例：
 {
   "mcpServers": {
     "vector-memory": {
-      "command": "D:\\AItool\\Vector-memony\\.venv\\Scripts\\python.exe",
+      "command": "<你的项目路径>\\.venv\\Scripts\\python.exe",
       "args": ["-m", "src.server"],
-      "cwd": "D:\\AItool\\Vector-memony"
+      "cwd": "<你的项目路径>"
     }
   }
 }
